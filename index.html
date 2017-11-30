@@ -1,0 +1,23 @@
+<!doctype html>
+<title>iOS 11 Safari broken JIT test</title>
+<script>
+var k = -1;  // 1だと不再現
+var o = {};
+o[k] = true;
+
+function f() {
+  if (!(k in o))  // `(k + "") in o` だと不再現 → たぶんDFGかFTLかに入った時に ToPropertyKey() が落ちるバグがある
+    throw new Error("Never reach");
+}
+
+var i = 0;
+try { 
+  for (i = 0; i < 100000; i++)
+    f();
+} catch (e) {
+  // iOS 11.1.2 の Safari では、 iがだいたい5000〜20000あたりでここに到達してしまう
+  alert("Broken " + JSON.stringify([i, (k in o), (('' + k) in o), o.hasOwnProperty(k)]));
+}
+
+alert("Done");
+</script>
