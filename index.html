@@ -1,23 +1,38 @@
 <!doctype html>
-<title>iOS 11 Safari broken JIT test</title>
+<meta charset="utf-8" />
+<title>Safari 11 JIT problem case</title>
 <script>
-var k = -1;  // 1だと不再現
-var o = {};
-o[k] = true;
+    var k = -1;  // k >= 0 is no problem, k < 0 is problem
+    var o = {};
+    o[k] = true;
 
-function f() {
-  if (!(k in o))  // `(k + "") in o` だと不再現 → たぶんDFGかFTLかに入った時に ToPropertyKey() が落ちるバグがある
-    throw new Error("Never reach");
-}
+    function f() {
+        // `(k + "") in o` is no problem
+        if (k in o) {
+            return;
+        }
+        // `k in o` must be true, but Safari 11 reach here
+        throw new Error("Never reach");
+    }
 
-var i = 0;
-try { 
-  for (i = 0; i < 100000; i++)
-    f();
-} catch (e) {
-  // iOS 11.1.2 の Safari では、 iがだいたい5000〜20000あたりでここに到達してしまう
-  alert("Broken " + JSON.stringify([i, (k in o), (('' + k) in o), o.hasOwnProperty(k)]));
-}
+    var i = 0;
+    try {
+        for (i = 0; i < 100000; i++) {
+            f();
+        }
+    } catch (e) {
+        // Reach here is problem
+        // Safari on iOS 11.1.2
+        // i: 5000~20000
+        // Safari 11.0.1 (12604.3.5.1.1) on mac sierra
+        // i: 2000~3000
+        alert(e.message + " : " + JSON.stringify({
+            "i": i,
+            "k in o": (k in o),
+            "(''+k) in o": (('' + k) in o),
+            "o.hasOwnProperty(k)": o.hasOwnProperty(k)
+        }, null, 2));
+    }
 
-alert("Done");
+    alert("Done");
 </script>
