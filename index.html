@@ -2,7 +2,7 @@
 <meta charset="utf-8" />
 <title>Safari 11 in operator JIT problem case</title>
 <p>Source Code</p>
-<pre>
+<pre><code>
     var k = -1;  // k >= 0 is no problem, k < 0 is problem
     var o = {};
     o[k] = true;
@@ -36,7 +36,7 @@
     }
 
     alert("Done");
-</pre>
+</code></pre>
 <script>
     var k = -1;  // k >= 0 is no problem, k < 0 is problem
     var o = {};
